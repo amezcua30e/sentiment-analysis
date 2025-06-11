@@ -2,7 +2,7 @@
 Multiclass sentiment classifier trained on 300K+ Amazon video game reviews using TF-IDF and Linear SVC. Includes custom preprocessing, model tuning, and benchmarking against logistic regression, CNN, and SMOTE. Achieved 66% validation accuracy despite class imbalance.
 
 
-**Final Project**
+**Final Project:**
 The final project in this course is to predict the sentiment score based on Amazon reviews. To start, download the dataset from the following link. This dataset, released in 2018, is part of the larger Amazon review dataset. It includes various product reviews (ratings, text, helpfulness votes), metadata (such as descriptions, categories, price, brand, image features), and product links (e.g., “also viewed” and “also bought” graphs) organized by category. For this project, we'll focus on a subset specifically related to the Video Games category.
 
 The dataset is formatted as one review per line in JSON, with fields including:
@@ -20,10 +20,10 @@ reviewTime - Review timestamp (raw)
 image - Images posted by users after receiving the product
 ```
 
-**Project Goal**
+**Project Goal:**
 The goal is to predict the overall rating using a test set provided as test.csv.gz. Your grade will be based on the performance of your classifier and the quality of your code.
 
-**Tips and Guidelines**
+**Tips and Guidelines:**
 Focus on Key Features: You are not required to use all information from the training data. Instead, focus primarily on the reviewText and overall fields. Examine reviewText in test.csv.gz and consider giving higher weights to similar observations in the training set.
 
 **Model Selection:** Choose models strictly from those covered in class. You are not required to use deep learning models. A well-chosen text representation with linear models can often outperform poorly tuned deep learning models, as we've discussed in class.
@@ -147,7 +147,7 @@ plt.ylabel('Text Length')
 
 Looking at these graphs tell us a couple of things: the data is imbalanced. Most of the scores are from 5s. About 3/5 scores are a 5. Imbalanced classes can lead to biased models that perform well on the majority class (score 5) but poorly on minority classes (scores 1, 2). The test and training data set look very similar with the text length distribution. Most of them are around the same length but they are some very big outliers.
 
-Sampling Data
+Sampling Data:
 Because of extremely high computing times, the data will be sampled.
 
 
@@ -204,7 +204,7 @@ plt.ylabel('Text Length')
 ```
 Sampling looks consistent with the bigger data. Percentages of each number are the same.
 
-Data Preprocessing
+Data Preprocessing:
 A quick inspection at the data shows us that there can be a lot of things for preprocessing that do make sense:
 
 Lowercasing: Even though some words appear such as "BOOOM" or something like that, keeping the uppercase does not really make a difference, so it is better to lowercase it.
@@ -377,7 +377,7 @@ test_data['overall'] = best_model.predict(test_data['reviewText'])
 # Save the DataFrame to a CSV file
 test_data.to_csv('/content/submission.csv', index=False)
 ```
-What I Tried
+What I Tried:
 Logistic Regression offered flexibility through regularization and class balancing, making it suitable for handling imbalanced datasets. I configured it with the liblinear solver for stability and increased the maximum iterations for better convergence. I also experimented with Multinomial Naive Bayes. Both are close or even the same to SVM but I could never get them higher than these scores, compared to SVM, which I once did.
 
 ```python
