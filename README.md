@@ -6,7 +6,7 @@ Multiclass sentiment classifier trained on 300K+ Amazon video game reviews using
 The final project in this course is to predict the sentiment score based on Amazon reviews. To start, download the dataset from the following link. This dataset, released in 2018, is part of the larger Amazon review dataset. It includes various product reviews (ratings, text, helpfulness votes), metadata (such as descriptions, categories, price, brand, image features), and product links (e.g., “also viewed” and “also bought” graphs) organized by category. For this project, we'll focus on a subset specifically related to the Video Games category.
 
 The dataset is formatted as one review per line in JSON, with fields including:
-
+```python
 reviewerID - Reviewer's ID (e.g., A2SUAM1J3GNN3B)
 asin - Product ID (e.g., 0000013714)
 reviewerName - Reviewer's name
@@ -18,7 +18,7 @@ summary - Summary of the review
 unixReviewTime - Review timestamp (Unix time)
 reviewTime - Review timestamp (raw)
 image - Images posted by users after receiving the product
-
+```
 
 **Project Goal**
 The goal is to predict the overall rating using a test set provided as test.csv.gz. Your grade will be based on the performance of your classifier and the quality of your code.
@@ -36,13 +36,13 @@ Focus on Key Features: You are not required to use all information from the trai
 Note: This whole project has been very difficult to work on due to the size of the data. Even sampling has been difficult. I will outline my whole process and what I tried below.
 
 
-[ ]
+```python
 from google.colab import drive
 drive.mount('/content/drive')
 
 Mounted at /content/drive
-
-[ ]
+```
+```python
 import pandas as pd
 
 # Load the JSON file
@@ -52,15 +52,11 @@ df = pd.read_json(file_path, lines=True)
 # Display the first few rows
 df.head()
 
-
-
-[ ]
 train_data= df = pd.read_json(file_path, lines=True)[['reviewText', 'overall']]
+```
+*Overall, I ended up trying about 5-6 models. Most of them were not that successful in capturing the sentiments well. I got about 66% accuracy across all models. The computing times has been the biggest challenge here. I have been getting RAM crash after RAM crash because this system cannot handle it. Any small change I make to some code I have to wait about 15-20 additional minutes for all of the code to run again. Sampling has helped a little but not too much. I will explain each thing I tried, but in the end I ended up using Linear SVC as this was the most consistently accurate model. 
 
-*Overall, I ended up trying about 5-6 models. Most of them were not that successful in capturing the sentiments well. I got about 66% accuracy across all models. The computing times has been the biggest challenge here. I have been getting RAM crash after RAM crash because this system cannot handle it. Any small change I make to some code I have to wait about 15-20 additional minutes for all of the code to run again. Sampling has helped a little but not too much. I will explain each thing I tried, but in the end I ended up using Linear SVC as this was the most consistently accurate model. *
-
-
-[ ]
+```python
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -97,10 +93,10 @@ test_data = pd.read_csv('/content/test.csv')
 [ ]
 
 test_data = test_data[['reviewText']]
-
+```
 Data Inspection
 
-[ ]
+```python
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -146,7 +142,7 @@ sns.boxplot(x='overall', y='text_length', data=train_data)
 plt.title('Text Length by Score in Training Data')
 plt.xlabel('Score')
 plt.ylabel('Text Length')
-
+```
 
 
 Looking at these graphs tell us a couple of things: the data is imbalanced. Most of the scores are from 5s. About 3/5 scores are a 5. Imbalanced classes can lead to biased models that perform well on the majority class (score 5) but poorly on minority classes (scores 1, 2). The test and training data set look very similar with the text length distribution. Most of them are around the same length but they are some very big outliers.
@@ -155,13 +151,11 @@ Sampling Data
 Because of extremely high computing times, the data will be sampled.
 
 
-[ ]
+```python
 from sklearn.model_selection import train_test_split
 
 train_data, _ = train_test_split(train_data, test_size=0.9, stratify=train_data['overall'], random_state=42)
 
-
-[ ]
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -207,7 +201,7 @@ sns.boxplot(x='overall', y='text_length', data=train_data)
 plt.title('Text Length by Score in Training Data')
 plt.xlabel('Score')
 plt.ylabel('Text Length')
-
+```
 Sampling looks consistent with the bigger data. Percentages of each number are the same.
 
 Data Preprocessing
@@ -227,10 +221,10 @@ Handling Contractions: Getting rid of contractions makes sentences clearer.
 
 Getting rid of special characters: Special characters do not contribute to anything in this analysis.
 
-8. Lemmatization was something I experimented with as I was not sure if it would be beneficial or not. In the end it was not. It took away 1% of the accuracy.
+Lemmatization was something I experimented with as I was not sure if it would be beneficial or not. In the end it was not. It took away 1% of the accuracy.
 
 
-[ ]
+```python
 import re  # For regular expressions
 import nltk  # For downloading NLTK data
 from nltk.corpus import stopwords  # For stopwords
@@ -302,15 +296,12 @@ print(test_data.head())
 2  it is exactly what was described would gladly ...           96
 3  decent quality headphones for a decent price. ...          197
 4       got for my son for christmas and he loves it           44
+```
 Models
-
-[ ]
+```python
 # Split data into training and validation sets
 X_train, X_val, y_train, y_val = train_test_split(train_data['reviewText'], train_data['overall'], test_size=0.2, random_state=42, stratify=train_data['overall'])
 
-
-
-[ ]
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -319,11 +310,6 @@ from sklearn.utils.class_weight import compute_class_weight
 import numpy as np
 from sklearn.model_selection import RandomizedSearchCV
 
-
-
-
-
-[ ]
 from sklearn.model_selection import RandomizedSearchCV
 
 # Set up the pipeline with TfidfVectorizer and LinearSVC
@@ -382,7 +368,6 @@ Best cross-validated accuracy:  0.6483859137679973
 weighted avg       0.66      0.67      0.66      9952
 
 
-[ ]
 # Using the best estimator from RandomizedSearchCV
 best_model = random_search.best_estimator_
 
@@ -391,10 +376,11 @@ test_data['overall'] = best_model.predict(test_data['reviewText'])
 
 # Save the DataFrame to a CSV file
 test_data.to_csv('/content/submission.csv', index=False)
+```
 What I Tried
 Logistic Regression offered flexibility through regularization and class balancing, making it suitable for handling imbalanced datasets. I configured it with the liblinear solver for stability and increased the maximum iterations for better convergence. I also experimented with Multinomial Naive Bayes. Both are close or even the same to SVM but I could never get them higher than these scores, compared to SVM, which I once did.
 
-[ ]
+```python
 from sklearn.metrics import classification_report, accuracy_score
 # Train Logistic Regression
 logistic_classifier = LogisticRegression(
@@ -457,12 +443,12 @@ Validation Accuracy: 0.63
   _warn_prf(average, modifier, f"{metric.capitalize()} is", len(result))
 To address class imbalance in my dataset, I tried to apply SMOTE (Synthetic Minority Oversampling Technique), which generates synthetic samples for underrepresented classes. Performance did not improve from this with any of the models.
 
-[ ]
 smote = SMOTE(random_state=42)
 X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+```
 I tried using a Convolutional Neural Network (CNN). I tokenized the review text using Keras' Tokenizer, applied padding, and limited the vocabulary size to 10,000 words to manage computational costs. The model consisted of an Embedding Layer followed by a Conv1D layer for extracting key features from the text. A Global Max Pooling layer condensed the features, followed by Dense Layers for classification. I compiled the model using the Adam optimizer and trained it over 50 epochs. The accuracy did not go above 66%. I tried experimenting with the neurons and hidden layers but it did not improve.
 
-[ ]
+```python
 # Parameters
 vocab_size = 10000  # Limit the vocabulary size
 max_length = 100    # Max number of words per review
@@ -475,8 +461,6 @@ X_train_seq = tokenizer.texts_to_sequences(X_train)
 X_val_seq = tokenizer.texts_to_sequences(X_val)
 X_train_padded = pad_sequences(X_train_seq, maxlen=max_length, padding='post', truncating='post')
 X_val_padded = pad_sequences(X_val_seq, maxlen=max_length, padding='post', truncating='post')
-
-[ ]
 
 
 # Define the model
@@ -495,7 +479,6 @@ model.compile(optimizer=Adam(learning_rate=1e-3),
               metrics=['accuracy'])
 
 
-[ ]
 # Adjust labels
 y_train_adjusted = y_train - 1
 y_val_adjusted = y_val - 1
@@ -516,29 +499,19 @@ history = model.fit(
     batch_size=32,
     )
 
-
-
-
-
-
-
-
-
-
-
-[ ]
 loss, accuracy = model.evaluate(X_val_padded, y_val_adjusted)
 print(f"Validation Accuracy: {accuracy:.2f}")
 3110/3110 ━━━━━━━━━━━━━━━━━━━━ 7s 2ms/step - accuracy: 0.6617 - loss: 0.9120
 Validation Accuracy: 0.66
+```
 To enhance model performance, I tried to calculate cosine similarity between the TF-IDF representations of the training and test sets. By determining the maximum similarity for each training sample, I assigned sample weights based on these values. This approach emphasizes training samples most similar to the test data, helping the model focus on relevant patterns. In the end, there was little to no improvement, and this code most of the time killed my RAM depending on the size of the sample
 
-
-[ ]
+```python
 # Calculate cosine similarity between train and test sets for sample weighting
 
 from sklearn.metrics.pairwise import cosine_similarity
 cosine_similarities = cosine_similarity(X_test_tfidf, X_train_tfidf)
 sample_weights = cosine_similarities.max(axis=0).flatten()  # Use the maximum similarity as the weight for each sample
+```
 There was once or twice that I was able to get the SVM past ~66% but since I was trying to go higher, I forgot what I did to get there and I could not get there again. I am not sure why it has been very difficult to get past 66%, even with CNNs. I know the data is imbalanced but it did not do much when using SMOTE or other balancing methods. I tried asking ChatGPT for help with this but its solutions yielded results that were not satisfactory. I think using more advanced models might probably help with this. I think I did all of the correct preprocessing so I do not think it has to do with that.
 
